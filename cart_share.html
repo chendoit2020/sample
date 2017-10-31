@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<!-- <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no"> -->
+		<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+		<meta name="format-detection" content="telephone=no">
+		<meta name="screen-orientation" content="portrait">
+		<title>购物车分享</title>
+		<script type="text/javascript" src="js/jquery.js" ></script>
+		<script type="text/javascript" src="js/common.js" ></script>
+		<link rel="stylesheet" href="css/font-awesome.min.css" />
+		<link rel="stylesheet" href="css/common.css" />
+	</head>
+	<style>
+
+		table{
+			 table-layout: fixed;  
+		}
+		table tr td {  
+		    text-overflow: ellipsis; /* for IE */  
+		    -moz-text-overflow: ellipsis; /* for Firefox,mozilla */  
+		    overflow: hidden;  
+		    white-space: nowrap;  
+		} 
+	</style>
+	<body>
+		<header class="header">
+			<div class="top">
+				<div class="fl">
+					<img src="img/app_icon.png" style="border-radius:5px;width: 38px;" />
+				</div>
+				<div class="fr">
+					<button class="open" onclick="openApp()"><i class="fa fa-angle-right fa-lg" style="padding-right: 5px;"></i>立即打开</button>
+				</div>
+				<div >
+					<span class="center first_line">闪购商城</span>
+				</div>
+			</div>
+		</header>
+		<div id='div_list' class="content-container">
+			<!-- <div class="item-div">
+				<img class="car_img" src="http://cn.misumi-ec.com/material/mech/MSM1/PHOTO/10300239070.jpg">
+				<div class="right-info">
+					<table class="listtable">
+						<tbody>
+							<tr>
+								<td class="left-td">型号：</td><td class="right-td">CB5-10</td>
+							</tr>
+							<tr>
+								<td class="left-td">商品名称：</td>
+								<td class="right-td">内六角螺栓</td>
+							</tr>
+							<tr>
+								<td class="left-td">品牌：</td>
+								<td class="right-td">MISUMI</td>
+							</tr>
+							<tr>
+								<td class="left-td">数量：</td>
+								<td class="right-td red">1</td>
+							</tr>
+							<tr>
+								<td class="left-td">发货日：</td>
+								<td class="right-td red">库存品1天</td>
+							</tr>
+							<tr>
+								<td class="left-td">小计：</td>
+								<td class="right-td red">6.16<span class="black-normal small-size">元</span>
+								</td>
+							</tr>
+							<tr>
+								<td class="left-td"></td>
+								<td class="right-td small-size">(含税：<span class="red">320.88</span>元)</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<hr class="hr-line"> -->
+			
+		</div>
+		<div class="bottom">
+			<span class="bottom-label">注意事项：</span>
+			<div class="bottom-txt">
+				·&nbsp;价格及发货日信息可能发生变化，购买前请再次确认。
+			</div>
+		</div>
+	</body>
+	<script>
+
+		// Google Analytics
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+		
+		ga('create', 'UA-6311415-1', 'auto');
+		ga('send', 'pageview');
+		// Google Analytics
+		
+		
+		// Baidu Analytics
+		var _hmt = _hmt || [];
+		(function() {
+			var hm = document.createElement("script");
+			hm.src = "//hm.baidu.com/hm.js?c86e2c4bb4ad01427261d9484e89bf8b";
+			var s = document.getElementsByTagName("script")[0];
+			s.parentNode.insertBefore(hm, s);
+		})();
+			// Baidu Analytics
+		//打开app协议名
+		 
+		//定义操作系统	
+		var isAndroid = false,
+			iPhone = false,
+			iPad = false,
+			downloadLink = "",
+			userAgent = navigator.userAgent;
+		if(userAgent.match("Android")) {//是否是安卓
+			isAndroid = true;
+			downloadLink = downloadLink_android;
+		} else if(userAgent.match("iPhone")) {//是否是iphone
+			iPhone = true;
+			downloadLink = downloadLink_iphone;
+		} else if(userAgent.match("iPad")) {//是否是ipad
+			iPad = true;
+			downloadLink = downloadLink_ipad;
+		}
+		//获取参数uuid		
+		var uuid = getUrlParam("UUID");
+		var open_url = "misumicnapp://?UUID="+uuid;	
+		$.ajax({
+
+		    type: 'GET',
+		
+		    url: "/Misumi/ShareServlet" ,
+		
+		    data: {"UUID":uuid} ,
+		
+		    success: function(result){
+		    	//json格式化
+		    	var obj = jQuery.parseJSON(result.result);
+		    	//虚线
+		    	var hr = '<hr class="hr-line"/>';
+		    	//组装的html
+		    	var listHtml = "";
+		    	//循环购物车列表
+		    	for (var i = 0; i < obj.length; i++) {
+		    		//型号
+		    		var pcode = "-";
+		    		if(obj[i].pcode!=undefined&&obj[i].pcode!=""){
+		    			pcode = obj[i].pcode;
+		    		}
+		    		//商品名称
+		    		var seriesName = "-";
+		    		if(obj[i].seriesName!=undefined&&obj[i].seriesName!=""){
+		    			seriesName = obj[i].seriesName;
+		    		}
+		    		//品牌
+		    		var brandName = "-";
+		    		if(obj[i].brandName!=undefined&&obj[i].brandName!=""){
+		    			brandName = obj[i].brandName;
+		    		}
+		    		//数量
+		    		var number = "-";
+		    		if(obj[i].number!=undefined&&obj[i].number!=""){
+		    			number = obj[i].number;
+		    		}
+		    		//发货日
+		    		var daysToShip = "-";
+		    		if(obj[i].daysToShip!=undefined&&obj[i].daysToShip!=""){
+		    			daysToShip = obj[i].daysToShip;
+		    		}
+		    		//小计
+		    		var totalPrice = "-";
+		    		if(obj[i].totalPrice!=undefined&&obj[i].totalPrice!=""){
+		    			totalPrice = obj[i].totalPrice;
+		    		}
+		    		//含税
+		    		var totalPriceIncludingTax = "-";
+		    		if(obj[i].totalPriceIncludingTax!=undefined&&obj[i].totalPriceIncludingTax!=""){
+		    			totalPriceIncludingTax = obj[i].totalPriceIncludingTax;
+		    		}
+		    		//组装html
+		    		listHtml += '<div class="item-div">';
+		    		if(obj[i].imageUrl!=undefined){
+		    			listHtml += '<img class="car_img" src="'+decodeURIComponent(obj[i].imageUrl)+'" />';
+		    		}else{
+		    			listHtml += '<img class="car_img" src="img/no-img.jpg" />';
+		    		}
+		    		listHtml += '<div class="right-info">';
+		    		listHtml += '<table class="listtable">';
+		    		listHtml += '<tr><td class="left-td">型号：</td><td class="right-td">'+decodeURIComponent(pcode)+'</td></tr>';
+					listHtml += '<tr><td class="left-td">商品名称：</td><td class="right-td">'+decodeURIComponent(seriesName)+'</td></tr>';							
+					listHtml += '<tr><td class="left-td">品牌：</td><td class="right-td">'+decodeURIComponent(brandName)+'</td></tr>';
+					listHtml += '<tr><td class="left-td">数量：</td><td class="right-td red">'+number+'</td></tr>';	
+					listHtml += '<tr><td class="left-td">发货日：</td><td class="right-td red">'+decodeURIComponent(daysToShip)+'</td></tr>';							
+					listHtml += '<tr><td class="left-td">小计：</td><td class="right-td red">'+totalPrice+'<span class="black-normal">元</span></td></tr>';
+					listHtml += '<tr><td class="left-td"></td><td class="right-td small-size">(含税：<span class="red">'+totalPriceIncludingTax+'</span>元)</td></tr>';
+					listHtml +='</table></div></div>';
+					//不是最后一个商品时添加一条虚线
+					if(i<obj.length-1){
+						listHtml +=hr;
+					}
+				}
+		    	$("#div_list").html(listHtml);
+		    	//设置图片高度等于宽度，防止未加载完成图片时画面挤压在一起
+		    	$(".car_img").height($(".car_img").width());
+		    	
+		    	loadCustomScheme();
+		    } ,
+		
+		    dataType: 'json',
+		    error:function(data){
+		    	
+		    }
+		});
+		//打开APP
+		function loadCustomScheme() {
+			if(isAndroid || iPhone || iPad) {
+				if(isAndroid) {
+					div = document.createElement('div');
+					div.style.visibility = 'hidden';
+					div.innerHTML = '<iframe id="schema" src="' + open_url + '" scrolling="no" width="1" height="1"></iframe>';
+					document.body.appendChild(div);
+				}
+				if(iPhone || iPad) {
+					var ifr = document.createElement('iframe');  
+			        ifr.src = open_url;  
+			        ifr.style.display = 'none';  
+			        document.body.appendChild(ifr);  
+			        //延迟50毫秒打开协议
+			        window.setTimeout(function(){  
+			        	window.location = open_url;
+			        },50);  
+				}
+			}
+		}
+		//判断是否在微信游览器中
+		function is_weixin() {
+				var ua = navigator.userAgent.toLowerCase();
+				if(ua.match(/MicroMessenger/i) == "micromessenger") {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		//判断是否在QQ游览器中
+		function is_qq(){
+			if(navigator.userAgent.indexOf('QQ') !== -1){
+				return true;
+			}else{
+				return false;
+			}
+		}
+			var isWeixin = is_weixin();
+			var isQQ = is_qq();
+			var winHeight = typeof window.innerHeight != 'undefined' ? window.innerHeight : document.documentElement.clientHeight;
+
+			function loadHtml() {
+				var div = document.createElement('div');
+				div.id = 'weixin-tip';
+				div.innerHTML = '<p><img width="100%" src="img/live_weixin.png" alt="微信打开"/></p>';
+				document.body.appendChild(div);
+				$("#weixin-tip").unbind("click");
+				$("#weixin-tip").bind("click",function(){
+					$("#weixin-tip").remove();
+				});
+			}
+
+			function loadStyleText(cssText) {
+				var style = document.createElement('style');
+				style.rel = 'stylesheet';
+				style.type = 'text/css';
+				try {
+					style.appendChild(document.createTextNode(cssText));
+				} catch(e) {
+					style.styleSheet.cssText = cssText; //ie9以下
+				}
+				var head = document.getElementsByTagName("head")[0]; //head标签之间加上style样式
+				head.appendChild(style);
+			}
+			var cssText = "#weixin-tip{position: fixed; left:0; top:0; background: rgba(0,0,0,0.8); filter:alpha(opacity=80); width: 100%; height:100%; z-index: 100;} #weixin-tip p{text-align: center; margin-top:0; padding:0 0;}";
+			//打开APP
+			function openApp() {
+				//GA事件
+				ga('send','event','share_browserDL','click','share_browser_cart');
+				//微信下打开app弹出浮层
+				if(isWeixin||isQQ) {
+					loadHtml();
+					loadStyleText(cssText);
+				} else {
+					//此操作会调起app并阻止接下来的js执行
+					loadCustomScheme();
+					
+					var timer = setTimeout(function() {
+						window.location = downloadLink; //android下载地址
+					}, 3000);;
+
+					document.addEventListener("visibilitychange", function() {
+						 clearTimeout.clearTimeout(timer);
+					});
+					document.addEventListener("webkitvisibilitychange", function() {
+						 clearTimeout.clearTimeout(timer);
+					});
+					
+					window.addEventListener("pagehide",function(){
+						clearTimeout.clearTimeout(timer);
+					});
+
+					//					setTimeout(function() {
+					//						window.location = downloadLink;
+					//					}, 5000);
+				}
+			}
+
+
+		
+	</script>
+</html>
